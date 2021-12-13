@@ -19,4 +19,4 @@
 //   go install google.golang.org/protobuf/cmd/protoc-gen-go
 package proto
 
-//go:generate protoc --go_out=. --go_opt=module=github.com/google/go-tpm-tools/proto tpm.proto attest.proto
+//go:generate protoc --go_out=. --go_opt=module=github.com/jasonkolodziej/go-tpm-tools/proto tpm.proto attest.proto

@@ -8,9 +8,9 @@ import (
 	"crypto/rsa"
 	"testing"
 
-	"github.com/google/go-tpm-tools/client"
-	"github.com/google/go-tpm-tools/internal/test"
 	"github.com/google/go-tpm/tpm2"
+	"github.com/jasonkolodziej/go-tpm-tools/client"
+	"github.com/jasonkolodziej/go-tpm-tools/internal/test"
 )
 
 func getECCTemplate(curve tpm2.EllipticCurve) tpm2.Public {

@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/google/go-tpm-tools/client"
 	"github.com/google/go-tpm/tpm2"
+	"github.com/jasonkolodziej/go-tpm-tools/client"
 )
 
 var defaultNameAlg = client.DefaultEKTemplateRSA().NameAlg

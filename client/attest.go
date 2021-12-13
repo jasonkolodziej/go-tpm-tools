@@ -3,7 +3,7 @@ package client
 import (
 	"fmt"
 
-	pb "github.com/google/go-tpm-tools/proto/attest"
+	pb "github.com/jasonkolodziej/go-tpm-tools/proto/attest"
 )
 
 // AttestOpts allows for customizing the functionality of Attest.

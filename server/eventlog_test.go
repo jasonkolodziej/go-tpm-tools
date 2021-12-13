@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/google/go-tpm-tools/client"
-	"github.com/google/go-tpm-tools/internal/test"
-	attestpb "github.com/google/go-tpm-tools/proto/attest"
-	pb "github.com/google/go-tpm-tools/proto/tpm"
 	"github.com/google/go-tpm/tpm2"
+	"github.com/jasonkolodziej/go-tpm-tools/client"
+	"github.com/jasonkolodziej/go-tpm-tools/internal/test"
+	attestpb "github.com/jasonkolodziej/go-tpm-tools/proto/attest"
+	pb "github.com/jasonkolodziej/go-tpm-tools/proto/tpm"
 )
 
 type eventLog struct {

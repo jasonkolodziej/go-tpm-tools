@@ -24,8 +24,8 @@ import (
 	"math/rand"
 	"sync"
 
-	"github.com/google/go-tpm-tools/simulator/internal"
 	"github.com/google/go-tpm/tpm2"
+	"github.com/jasonkolodziej/go-tpm-tools/simulator/internal"
 )
 
 // Simulator represents a go-tpm compatible interface to the IBM TPM2 simulator.

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	pb "github.com/google/go-tpm-tools/proto/attest"
+	pb "github.com/jasonkolodziej/go-tpm-tools/proto/attest"
 )
 
 // EvaluatePolicy succeeds if the provided MachineState complies with the

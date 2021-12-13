@@ -6,8 +6,8 @@ import (
 	"io"
 	"math"
 
-	pb "github.com/google/go-tpm-tools/proto/tpm"
 	"github.com/google/go-tpm/tpm2"
+	pb "github.com/jasonkolodziej/go-tpm-tools/proto/tpm"
 )
 
 // NumPCRs is set to the spec minimum of 24, as that's all go-tpm supports.

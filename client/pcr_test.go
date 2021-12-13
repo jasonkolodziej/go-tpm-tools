@@ -8,11 +8,11 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/google/go-tpm-tools/client"
-	"github.com/google/go-tpm-tools/internal"
-	"github.com/google/go-tpm-tools/internal/test"
 	"github.com/google/go-tpm/tpm2"
 	"github.com/google/go-tpm/tpmutil"
+	"github.com/jasonkolodziej/go-tpm-tools/client"
+	"github.com/jasonkolodziej/go-tpm-tools/internal"
+	"github.com/jasonkolodziej/go-tpm-tools/internal/test"
 )
 
 var extends = map[tpm2.Algorithm][]struct {

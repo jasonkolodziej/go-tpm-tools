@@ -10,9 +10,9 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/google/go-tpm-tools/client"
-	"github.com/google/go-tpm-tools/internal/test"
 	"github.com/google/go-tpm/tpm2"
+	"github.com/jasonkolodziej/go-tpm-tools/client"
+	"github.com/jasonkolodziej/go-tpm-tools/internal/test"
 )
 
 func templateSSA(hash tpm2.Algorithm) tpm2.Public {

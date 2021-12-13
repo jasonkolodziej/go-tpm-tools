@@ -8,11 +8,11 @@ import (
 	"io"
 	"log"
 
-	"github.com/google/go-tpm-tools/client"
-	"github.com/google/go-tpm-tools/internal"
-	"github.com/google/go-tpm-tools/server"
-	"github.com/google/go-tpm-tools/simulator"
 	"github.com/google/go-tpm/tpm2"
+	"github.com/jasonkolodziej/go-tpm-tools/client"
+	"github.com/jasonkolodziej/go-tpm-tools/internal"
+	"github.com/jasonkolodziej/go-tpm-tools/server"
+	"github.com/jasonkolodziej/go-tpm-tools/simulator"
 )
 
 var tpmHashAlg = tpm2.AlgSHA256

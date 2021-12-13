@@ -8,9 +8,9 @@ import (
 
 	"github.com/google/certificate-transparency-go/x509"
 	"github.com/google/go-attestation/attest"
-	pb "github.com/google/go-tpm-tools/proto/attest"
-	tpmpb "github.com/google/go-tpm-tools/proto/tpm"
 	"github.com/google/go-tpm/tpm2"
+	pb "github.com/jasonkolodziej/go-tpm-tools/proto/attest"
+	tpmpb "github.com/jasonkolodziej/go-tpm-tools/proto/tpm"
 )
 
 // ParseMachineState parses a raw event log and replays the parsed event

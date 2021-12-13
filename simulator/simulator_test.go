@@ -22,8 +22,8 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/google/go-tpm-tools/client"
 	"github.com/google/go-tpm/tpm2"
+	"github.com/jasonkolodziej/go-tpm-tools/client"
 )
 
 func getSimulator(t *testing.T) *Simulator {

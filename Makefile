@@ -4,6 +4,10 @@
 generate:
 	$(BUF) generate
 
+.PHONY: forkup
+forkup:
+	find . -path ./vendor -prune -o -type f \( -name '*.go' -o -name '*.proto' \) -exec sed -i -e "s;github.com/google/go-tpm-tools;github.com/jasonkolodziej/go-tpm-tools;g" {} +
+
 # Used to produce vendor directory
 # if other proto files need access to a vendor's proto file
 go_gen_vendor:

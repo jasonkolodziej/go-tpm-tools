@@ -8,10 +8,10 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/google/go-tpm-tools/internal"
-	pb "github.com/google/go-tpm-tools/proto/tpm"
 	"github.com/google/go-tpm/tpm2"
 	"github.com/google/go-tpm/tpmutil"
+	"github.com/jasonkolodziej/go-tpm-tools/internal"
+	pb "github.com/jasonkolodziej/go-tpm-tools/proto/tpm"
 )
 
 // Key wraps an active asymmetric TPM2 key. This can either be a signing key or

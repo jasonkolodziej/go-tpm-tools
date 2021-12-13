@@ -3,7 +3,7 @@ package server
 import (
 	"testing"
 
-	pb "github.com/google/go-tpm-tools/proto/attest"
+	pb "github.com/jasonkolodziej/go-tpm-tools/proto/attest"
 )
 
 func getGceMemoryEncryptionNonhostEvent(memoryEncrypted bool) []byte {

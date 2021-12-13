@@ -29,7 +29,6 @@ type (
 			thus starting a hash sequence is started.
 			If tpm2.Algorithm is determined as TPM_ALG_NULL, then an TPM event sequence is started.*/
 	HashResolver = func() (hashType *crypto.Hash, rw io.ReadWriter)
-	U16Bytes     []byte
 )
 
 func ByteSliceToBuffer(data DataToHash) *bytes.Buffer { return bytes.NewBuffer(data) }
@@ -89,7 +88,7 @@ to sequentially feed maxDigestBufferSize to the TPM.
 
 - or error*/
 func HashWithSequencing(data DataToHash, resolver HashResolver,
-	sequenceAuth string, hierarchyHandle *tpmutil.Handle) (Digest, *Ticket, error) {
+	sequenceAuthorization string, hierarchyHandle *tpmutil.Handle) (Digest, *Ticket, error) {
 	// convert data into buffer
 	var sequenceHandle tpmutil.Handle
 	var alg tpm2.Algorithm
@@ -102,22 +101,63 @@ func HashWithSequencing(data DataToHash, resolver HashResolver,
 			return nil, nil, err
 		}
 	} else {
+		// enforces AlgNull
 		alg = tpm2.AlgNull
 	}
 	// TPM
 	if device != nil && hierarchyHandle != nil {
-		sequenceHandle, err = tpm2.HashSequenceStart(device, sequenceAuth, alg)
+		sequenceHandle, err = tpm2.HashSequenceStart(device, sequenceAuthorization, alg)
 		if err != nil {
 			return nil, nil, err
 		}
 	}
 	// iterate through buffer until empty
 	for k := true; k; k = dataBuffer.Len() > 0 {
-		err = tpm2.SequenceUpdate(device, sequenceAuth, sequenceHandle, dataBuffer.Next(maxDigestBufferSize))
+		err = tpm2.SequenceUpdate(device, sequenceAuthorization, sequenceHandle, dataBuffer.Next(maxDigestBufferSize))
 		if err != nil {
 			return nil, nil, err
 		}
 	}
-	// complete sequence
-	return tpm2.SequenceComplete(device, sequenceAuth, sequenceHandle, *hierarchyHandle, nil)
+	return tpm2.SequenceComplete(device, sequenceAuthorization, sequenceHandle, *hierarchyHandle, nil)
+}
+
+/*EventWithSequencing records event data in sequence, differs between HashWithSequencing by invoking
+tpm2.EventSequenceComplete.
+
+If pcrHandle references a PCR and not tpm2.AlgNull or nil, then the returned digest list is processed in the same
+manner as the digest list input parameter to PCRExtend() with the pcrHandle in each bank extended with the
+associated digest value.*/
+func EventWithSequencing(data DataToHash, resolver HashResolver,
+	sequenceAuthorization, pcrAuthorization string, pcrHandle tpmutil.Handle) ([]*tpm2.HashValue, error) {
+	// convert data into buffer
+	var sequenceHandle tpmutil.Handle
+	var alg tpm2.Algorithm
+	var err error
+	dataBuffer := ByteSliceToBuffer(data)
+	h, device := resolver()
+	// TODO: inspect for event sequence
+	if h != nil {
+		alg, err = tpm2.HashToAlgorithm(*h)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		// enforces AlgNull
+		alg = tpm2.AlgNull
+	}
+	// TPM
+	if device != nil {
+		sequenceHandle, err = tpm2.HashSequenceStart(device, sequenceAuthorization, alg)
+		if err != nil {
+			return nil, err
+		}
+	}
+	// iterate through buffer until empty
+	for k := true; k; k = dataBuffer.Len() > 0 {
+		err = tpm2.SequenceUpdate(device, sequenceAuthorization, sequenceHandle, dataBuffer.Next(maxDigestBufferSize))
+		if err != nil {
+			return nil, err
+		}
+	}
+	return tpm2.EventSequenceComplete(device, pcrAuthorization, sequenceAuthorization, pcrHandle, sequenceHandle, nil)
 }

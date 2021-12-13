@@ -62,15 +62,26 @@ func TestByteSliceToBuffer(t *testing.T) {
 func TestHashWithSequencing(t *testing.T) {
 	rwc := test.GetTPM(t)
 	defer client.CheckedClose(t, rwc)
-	var resolve client.HashResolver = func() (hashType *crypto.Hash, rw io.ReadWriter) {
+	var resolveNil client.HashResolver = func() (hashType *crypto.Hash, rw io.ReadWriter) {
 		// hash := crypto.SHA1
 		return nil, rwc
 	}
 	handle := tpm2.HandleNull
-	digest, ticket, err := client.HashWithSequencing(testStringByteSlice, resolve, "", &handle)
+	digest, ticket, err := client.HashWithSequencing(testStringByteSlice, resolveNil, "", &handle)
+	if err == nil {
+		t.Log(digest)
+		t.Log(ticket)
+		t.Fatalf("Expected to fail, but test passed")
+	}
+	var resolveSha1 client.HashResolver = func() (hashType *crypto.Hash, rw io.ReadWriter) {
+		hash := crypto.SHA1
+		return &hash, rwc
+	}
+	digest, ticket, err = client.HashWithSequencing(testStringByteSlice, resolveSha1, "", &handle)
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Log(digest)
 	t.Log(ticket)
+
 }

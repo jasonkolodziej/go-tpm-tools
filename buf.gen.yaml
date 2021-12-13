@@ -1,0 +1,12 @@
+version: v1
+managed:
+  enabled: true
+  go_package_prefix:
+    default: github.com/jasonkolodziej/go-tpm-tools/proto
+    except:
+      - buf.build/googleapis/googleapis
+      - buf.build/grpc-ecosystem/grpc-gateway
+plugins:
+  - remote: buf.build/library/plugins/go:v1.27.1-1
+    out: proto
+    opt: paths=source_relative

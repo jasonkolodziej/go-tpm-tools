@@ -1,0 +1,25 @@
+version: v1
+name: buf.build/jasonkolodziej/go-tpm-tools
+lint:
+  # produced by cmd `buf lint --error-format=config-ignore-yaml`
+  ignore_only:
+    DIRECTORY_SAME_PACKAGE:
+      - attest.proto
+      - tpm.proto
+    ENUM_VALUE_PREFIX:
+      - attest.proto
+      - tpm.proto
+    ENUM_ZERO_VALUE_SUFFIX:
+      - attest.proto
+      - tpm.proto
+    PACKAGE_DIRECTORY_MATCH:
+      - attest.proto
+      - tpm.proto
+    PACKAGE_VERSION_SUFFIX:
+      - attest.proto
+      - tpm.proto
+  use:
+    - DEFAULT
+breaking:
+  use:
+    - FILE

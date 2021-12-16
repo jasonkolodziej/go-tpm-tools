@@ -164,5 +164,3 @@ func mergePCRSelAndProto(rw io.ReadWriter, sel tpm2.PCRSelection, proto *pb.PCRs
 	}
 	return currentPcrs, nil
 }
-
-func hello() {}

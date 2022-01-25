@@ -13,13 +13,13 @@ import (
 
 	"github.com/google/certificate-transparency-go/x509"
 	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-tpm-tools/cel"
-	"github.com/google/go-tpm-tools/client"
-	"github.com/google/go-tpm-tools/internal"
-	"github.com/google/go-tpm-tools/internal/test"
-	attestpb "github.com/google/go-tpm-tools/proto/attest"
 	"github.com/google/go-tpm/tpm2"
 	"github.com/google/go-tpm/tpmutil"
+	"github.com/jasonkolodziej/go-tpm-tools/cel"
+	"github.com/jasonkolodziej/go-tpm-tools/client"
+	"github.com/jasonkolodziej/go-tpm-tools/internal"
+	"github.com/jasonkolodziej/go-tpm-tools/internal/test"
+	attestpb "github.com/jasonkolodziej/go-tpm-tools/proto/attest"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/testing/protocmp"
 )

@@ -88,7 +88,7 @@ enum WellKnownCertificate {
 message Certificate {
 
   // The representation of the certificate. If the certificate matches a
-  // well-known certificate above, representation should contain the value in 
+  // well-known certificate above, representation should contain the value in
   // the enum. Otherwise, it will contain the raw DER.
   oneof representation {
     // DER representation of the certificate.

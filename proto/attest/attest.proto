@@ -31,6 +31,9 @@ message Attestation {
   GCEInstanceInfo instance_info = 4;
   // A TCG Canonical Event Log.
   bytes canonical_event_log = 5;
+  // Attestation Key (AK) Certificate, encoded as ASN.1 DER.
+  // Optional.
+  bytes ak_cert = 6;
 }
 
 // Type of hardware technology used to protect this instance
@@ -115,23 +118,40 @@ message SecureBootState {
 }
 
 // The container's restart policy.
-// See
+// See the following Kubernetes documentation for more details:
 // https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy
-// for more details.
+// Note that these enum variants do not conform to the standard Protocol Buffers
+// Style Guide so that RestartPolicy_name, RestartPolicy_value, and
+// RestartPolicy.String() match the values used by Kubernetes and others.
 enum RestartPolicy {
-  ALWAYS = 0;
-  ON_FAILURE = 1;
-  NEVER = 2;
+  Always = 0;
+  OnFailure = 1;
+  Never = 2;
 }
 
 message ContainerState {
   string image_reference = 1;
-  bytes image_digest = 2;
+  // Digest of the registry's image manifest, which contains a list of the
+  // layers comprising the image.
+  string image_digest = 2;
   RestartPolicy restart_policy = 3;
+  // Digest of the local image configuration object, containing config items
+  // such as local layer digests.
+  string image_id = 4;
+  repeated string args = 5;
+  map<string, string> env_vars = 6;
+}
+
+message SemanticVersion {
+  uint32 major = 1;
+  uint32 minor = 2;
+  uint32 patch = 3;
 }
 
 message AttestedCosState {
   ContainerState container = 1;
+  SemanticVersion cos_version = 2;
+  SemanticVersion launcher_version = 3;
 }
 
 // The verified state of a booted machine, obtained from an Attestation

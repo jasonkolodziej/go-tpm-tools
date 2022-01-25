@@ -9,7 +9,7 @@ import (
 	"strconv"
 
 	"github.com/google/certificate-transparency-go/x509"
-	pb "github.com/google/go-tpm-tools/proto/attest"
+	pb "github.com/jasonkolodziej/go-tpm-tools/proto/attest"
 )
 
 // Expected Firmware/PCR0 Event Types.

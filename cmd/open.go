@@ -30,3 +30,7 @@ func openTpm() (io.ReadWriteCloser, error) {
 	}
 	return rwc, nil
 }
+
+func Connect() (io.ReadWriteCloser, error) {
+	return openTpm()
+}

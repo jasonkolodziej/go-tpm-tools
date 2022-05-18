@@ -198,7 +198,7 @@ func ExampleKey_GetSigner() {
 			},
 		},
 	}
-	key, err := client.NewKey(simulator, tpm2.HandleOwner, exampleECCSignerTemplate)
+	key, err := client.NewKey(simulator, tpm2.HandleOwner, exampleECCSignerTemplate, nil)
 	if err != nil {
 		log.Fatalf("failed to create signing key: %v", err)
 	}
@@ -248,7 +248,7 @@ func ExampleKey_SignData() {
 			},
 		},
 	}
-	key, err := client.NewKey(simulator, tpm2.HandleOwner, exampleECCSignerTemplate)
+	key, err := client.NewKey(simulator, tpm2.HandleOwner, exampleECCSignerTemplate, nil)
 	if err != nil {
 		log.Fatalf("failed to create signing key: %v", err)
 	}

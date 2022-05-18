@@ -115,7 +115,8 @@ func KeyFromNvIndex(rw io.ReadWriter, parent tpmutil.Handle, idx uint32) (*Key, 
 	if err != nil {
 		return nil, fmt.Errorf("index %d data was not a TPM key template: %w", idx, err)
 	}
-	return NewKey(rw, parent, template)
+	// TODO: check
+	return NewKey(rw, parent, template, nil)
 }
 
 // NewCachedKey is almost identical to NewKey, except that it initially tries to
@@ -141,8 +142,8 @@ func NewCachedKey(rw io.ReadWriter, parent tpmutil.Handle, template tpm2.Public,
 			return nil, err
 		}
 	}
-
-	k, err = NewKey(rw, parent, template)
+	// TODO: check
+	k, err = NewKey(rw, parent, template, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -155,6 +156,11 @@ func NewCachedKey(rw io.ReadWriter, parent tpmutil.Handle, template tpm2.Public,
 	return k, nil
 }
 
+type ChildKeyParams struct {
+	PcrSelection tpm2.PCRSelection
+	ParentPw, Pw string
+}
+
 // NewKey generates a key from the template and loads that key into the TPM
 // under the specified parent. NewKey can call many different TPM commands:
 //   - If parent is tpm2.Handle{Owner|Endorsement|Platform|Null} a primary key
@@ -164,24 +170,61 @@ func NewCachedKey(rw io.ReadWriter, parent tpmutil.Handle, template tpm2.Public,
 // This function also assumes that the desired key:
 //   - Does not have its usage locked to specific PCR values
 //   - Usable with empty authorization sessions (i.e. doesn't need a password)
-func NewKey(rw io.ReadWriter, parent tpmutil.Handle, template tpm2.Public) (k *Key, err error) {
+func NewKey(rw io.ReadWriter, parent tpmutil.Handle, template tpm2.Public, optChlidKeyParams *ChildKeyParams) (k *Key, err error) {
+	var (
+		h       tpmutil.Handle
+		pubArea []byte
+	)
 	if !isHierarchy(parent) {
+		var (
+			pcrSel             = tpm2.PCRSelection{}
+			parentPw, ownersPw string
+		)
+		if optChlidKeyParams != nil {
+			pcrSel = optChlidKeyParams.PcrSelection
+			parentPw = optChlidKeyParams.ParentPw
+			ownersPw = optChlidKeyParams.Pw
+		}
+		var (
+			pK, cData, cHash []byte // pK - private key
+			// pubArea - public key area
+			// cData - creation Data
+			// cHash - creation Hash
+			cTkt tpm2.Ticket // cTkt - creation Ticket
+		)
+		// pubK - public key area
+		// cData - creation Data
+		// cHash - creation Hash
+		// cTkt - creation Ticket
+		pK, pubArea, cData, cHash, cTkt, err = tpm2.CreateKey(rw, parent, pcrSel, parentPw, ownersPw, template)
+		if err != nil {
+			return nil, err
+		}
+		fmt.Printf("creation data: %v\ncreation hash: %x\ncreation ticket:%v\n", cData, cHash, cTkt)
+		// h - handle of object
+		// name - name of object
+		var name []byte
+		h, name, err = tpm2.Load(rw, parent, parentPw, pubArea, pK)
+		if err != nil {
+			return nil, err
+		}
+		fmt.Printf("key loaded: %s", string(name))
 		// TODO add support for normal objects with Create() and Load()
-		return nil, fmt.Errorf("unsupported parent handle: %x", parent)
-	}
-
-	handle, pubArea, _, _, _, _, err :=
-		tpm2.CreatePrimaryEx(rw, parent, tpm2.PCRSelection{}, "", "", template)
-	if err != nil {
-		return nil, err
+		// return nil, fmt.Errorf("unsupported parent handle: %x", parent)
+	} else {
+		h, pubArea, _, _, _, _, err =
+			tpm2.CreatePrimaryEx(rw, parent, tpm2.PCRSelection{}, "", "", template)
+		if err != nil {
+			return nil, err
+		}
 	}
 	defer func() {
 		if err != nil {
-			tpm2.FlushContext(rw, handle)
+			tpm2.FlushContext(rw, h)
 		}
 	}()
 
-	k = &Key{rw: rw, handle: handle}
+	k = &Key{rw: rw, handle: h}
 	if k.pubArea, err = tpm2.DecodePublic(pubArea); err != nil {
 		return
 	}

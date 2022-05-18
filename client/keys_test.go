@@ -37,7 +37,7 @@ func TestCreateSigningKeysInHierarchies(t *testing.T) {
 
 	// We are not authorized to create keys in the Platform Hierarchy
 	for _, hierarchy := range []tpmutil.Handle{tpm2.HandleOwner, tpm2.HandleEndorsement, tpm2.HandleNull} {
-		key, err := client.NewKey(rwc, hierarchy, template)
+		key, err := client.NewKey(rwc, hierarchy, template, nil)
 		if err != nil {
 			t.Errorf("Hierarchy %+v: %s", hierarchy, err)
 		} else {
@@ -139,13 +139,13 @@ func BenchmarkKeyCreation(b *testing.B) {
 		{"AK-ECC-Cached", client.AttestationKeyECC},
 
 		{"SRK-ECC", func(rw io.ReadWriter) (*client.Key, error) {
-			return client.NewKey(rw, tpm2.HandleOwner, client.SRKTemplateECC())
+			return client.NewKey(rw, tpm2.HandleOwner, client.SRKTemplateECC(), nil)
 		}},
 		{"EK-ECC", func(rw io.ReadWriter) (*client.Key, error) {
-			return client.NewKey(rw, tpm2.HandleEndorsement, client.DefaultEKTemplateECC())
+			return client.NewKey(rw, tpm2.HandleEndorsement, client.DefaultEKTemplateECC(), nil)
 		}},
 		{"AK-ECC", func(rw io.ReadWriter) (*client.Key, error) {
-			return client.NewKey(rw, tpm2.HandleOwner, client.AKTemplateECC())
+			return client.NewKey(rw, tpm2.HandleOwner, client.AKTemplateECC(), nil)
 		}},
 
 		{"SRK-RSA-Cached", client.StorageRootKeyRSA},
@@ -153,13 +153,13 @@ func BenchmarkKeyCreation(b *testing.B) {
 		{"AK-RSA-Cached", client.AttestationKeyRSA},
 
 		{"SRK-RSA", func(rw io.ReadWriter) (*client.Key, error) {
-			return client.NewKey(rw, tpm2.HandleEndorsement, client.SRKTemplateRSA())
+			return client.NewKey(rw, tpm2.HandleEndorsement, client.SRKTemplateRSA(), nil)
 		}},
 		{"EK-RSA", func(rw io.ReadWriter) (*client.Key, error) {
-			return client.NewKey(rw, tpm2.HandleOwner, client.DefaultEKTemplateRSA())
+			return client.NewKey(rw, tpm2.HandleOwner, client.DefaultEKTemplateRSA(), nil)
 		}},
 		{"AK-RSA", func(rw io.ReadWriter) (*client.Key, error) {
-			return client.NewKey(rw, tpm2.HandleOwner, client.AKTemplateRSA())
+			return client.NewKey(rw, tpm2.HandleOwner, client.AKTemplateRSA(), nil)
 		}},
 	}
 
@@ -182,5 +182,41 @@ func BenchmarkKeyCreation(b *testing.B) {
 				key.Close()
 			}
 		})
+	}
+}
+
+func TestChildKeyCreation(t *testing.T) {
+	rwc := test.GetTPM(t)
+	defer client.CheckedClose(t, rwc)
+	x := func(rw io.ReadWriter) (*client.Key, error) {
+		return client.NewKey(rw, tpm2.HandleOwner, client.SRKTemplateRSA(), nil)
+	}
+	if parentKey, err := x(rwc); err != nil {
+		t.Fatal(err)
+	} else {
+		template := tpm2.Public{
+			Type:    tpm2.AlgRSA,
+			NameAlg: tpm2.AlgSHA256,
+			Attributes: tpm2.FlagFixedTPM | // Key can't leave the TPM.
+				tpm2.FlagFixedParent | // Key can't change parent.
+				tpm2.FlagSensitiveDataOrigin | // Key created by the TPM (not imported).
+				tpm2.FlagUserWithAuth | // Uses (empty) password.
+				tpm2.FlagSign,
+			AuthPolicy: []byte{},
+			RSAParameters: &tpm2.RSAParams{
+				Sign: &tpm2.SigScheme{
+					Alg:  tpm2.AlgRSASSA,
+					Hash: tpm2.AlgSHA256,
+				},
+				KeyBits: 2048,
+			},
+		}
+		childKey, err := client.NewKey(rwc, parentKey.Handle(), template, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Logf("parent name: %v\nchild name:%v\n", parentKey.Name(), childKey.Name())
+		parentKey.Close()
+		childKey.Close()
 	}
 }

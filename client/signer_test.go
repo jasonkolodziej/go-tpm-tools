@@ -100,7 +100,7 @@ func TestSign(t *testing.T) {
 		t.Run(k.name, func(t *testing.T) {
 			test.SkipOnUnsupportedAlg(t, rwc, alg)
 
-			key, err := client.NewKey(rwc, tpm2.HandleEndorsement, k.template)
+			key, err := client.NewKey(rwc, tpm2.HandleEndorsement, k.template, nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -121,7 +121,7 @@ func TestSign(t *testing.T) {
 		t.Run(k.name+"-SignData", func(t *testing.T) {
 			test.SkipOnUnsupportedAlg(t, rwc, alg)
 
-			key, err := client.NewKey(rwc, tpm2.HandleEndorsement, k.template)
+			key, err := client.NewKey(rwc, tpm2.HandleEndorsement, k.template, nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -145,7 +145,7 @@ func TestSign(t *testing.T) {
 
 			restrictedTemplate := k.template
 			restrictedTemplate.Attributes |= tpm2.FlagRestricted
-			key, err := client.NewKey(rwc, tpm2.HandleEndorsement, restrictedTemplate)
+			key, err := client.NewKey(rwc, tpm2.HandleEndorsement, restrictedTemplate, nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -171,7 +171,7 @@ func TestSignIncorrectHash(t *testing.T) {
 	rwc := test.GetTPM(t)
 	defer client.CheckedClose(t, rwc)
 
-	key, err := client.NewKey(rwc, tpm2.HandleEndorsement, templateSSA(tpm2.AlgSHA256))
+	key, err := client.NewKey(rwc, tpm2.HandleEndorsement, templateSSA(tpm2.AlgSHA256), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -234,7 +234,7 @@ func TestSignPSS(t *testing.T) {
 
 			k.template.RSAParameters.KeyBits = k.keyBits
 
-			key, err := client.NewKey(rwc, tpm2.HandleEndorsement, k.template)
+			key, err := client.NewKey(rwc, tpm2.HandleEndorsement, k.template, nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -278,7 +278,7 @@ func TestFailSignPSS(t *testing.T) {
 
 	for _, k := range keys {
 		t.Run(k.name, func(t *testing.T) {
-			key, err := client.NewKey(rwc, tpm2.HandleEndorsement, k.template)
+			key, err := client.NewKey(rwc, tpm2.HandleEndorsement, k.template, nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -305,7 +305,7 @@ func TestFailGetSignerNullScheme(t *testing.T) {
 
 	rwc := test.GetTPM(t)
 	defer client.CheckedClose(t, rwc)
-	key, err := client.NewKey(rwc, tpm2.HandleEndorsement, template)
+	key, err := client.NewKey(rwc, tpm2.HandleEndorsement, template, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

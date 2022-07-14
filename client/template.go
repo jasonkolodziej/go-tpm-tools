@@ -7,6 +7,10 @@ import (
 	"github.com/google/go-tpm/tpmutil"
 )
 
+const (
+	defaultDevIdAuth = false
+)
+
 // Calculations from Credential_Profile_EK_V2.0, section 2.1.5.3 - authPolicy
 func defaultEKAuthPolicy() []byte {
 	buf, err := tpmutil.Pack(tpm2.CmdPolicySecret, tpm2.HandleEndorsement)
@@ -139,5 +143,125 @@ func SRKTemplateECC() tpm2.Public {
 		NameAlg:       tpm2.AlgSHA256,
 		Attributes:    defaultSRKAttributes(),
 		ECCParameters: defaultECCParams(),
+	}
+}
+
+// DevIdKeyTemplate is a signing key per:
+// "TPM 2.0 Keys for Device Identity and Attestation" - Table 1 & Section 7.3.4
+// "TCG TPM v2.0 Provisioning Guidance" - Section 7.4.2.1
+func defaultDevIdAttributes(withUserAuth *bool) tpm2.KeyProp {
+	var kProp = (tpm2.FlagSignerDefault &^ tpm2.FlagRestricted) | tpm2.FlagAdminWithPolicy
+	if withUserAuth == nil {
+		*withUserAuth = defaultDevIdAuth
+	}
+	if *withUserAuth {
+		return kProp
+	}
+	return kProp &^ tpm2.FlagUserWithAuth
+}
+
+// IDevIdIak from "TPM 2.0 Keys for Device Identity and Attestation"
+// Section 7.3.1 (Table 2) & 7.3.4.2 (Table 4)
+func IDevIdIak(alg tpm2.Algorithm, createIak bool, withUserAuth *bool) tpm2.Public {
+	const (
+		devId = "DEVID"
+		iak   = "IAK"
+	)
+	var temp = tpm2.Public{}
+	var mod = []byte(devId)
+	var nMod []byte
+	if createIak {
+		mod = []byte(iak)
+	}
+	switch alg {
+	case tpm2.AlgRSA:
+	case tpm2.AlgSHA256:
+		nMod = make([]byte, 256)
+		temp.Type = tpm2.AlgRSA
+		temp.NameAlg = tpm2.AlgSHA256
+		temp.RSAParameters = &tpm2.RSAParams{
+			KeyBits: 2048,
+		}
+	case tpm2.AlgECC:
+		temp.Type = tpm2.AlgECC
+		temp.ECCParameters = &tpm2.ECCParams{
+			Sign: &tpm2.SigScheme{Alg: tpm2.AlgECDSA}}
+		alg &^= tpm2.AlgECC
+	case tpm2.AlgSHA384:
+		nMod = make([]byte, 384)
+		//temp.Type = tpm2.AlgECC
+		temp.NameAlg = tpm2.AlgSHA384
+		temp.ECCParameters.CurveID = tpm2.CurveNISTP384
+		//temp.ECCParameters = &tpm2.ECCParams{
+		//	Symmetric: &tpm2.SymScheme{Alg: tpm2.AlgECDSA},
+		//	CurveID:   tpm2.CurveNISTP384,
+		//}
+	case tpm2.AlgSHA512:
+		nMod = make([]byte, 512)
+		temp.Type = tpm2.AlgECC
+		temp.NameAlg = tpm2.AlgSHA512
+		temp.ECCParameters.CurveID = tpm2.CurveNISTP521
+		//temp.ECCParameters = &tpm2.ECCParams{
+		//	Sign:    &tpm2.SigScheme{Alg: tpm2.AlgECDSA},
+		//	CurveID: tpm2.CurveNISTP521,
+		//}
+	default:
+		return temp
+	}
+	temp.Attributes = defaultDevIdAttributes(withUserAuth)
+	for i, c := range mod {
+		nMod[i] = c
+	}
+	if temp.RSAParameters != nil {
+		temp.RSAParameters.ModulusRaw = nMod
+	} else {
+		l := len(nMod) / 8
+		temp.ECCParameters.Point = tpm2.ECPoint{
+			XRaw: nMod[0:l],
+			YRaw: nMod[(l + 1):],
+		}
+	}
+	return temp
+}
+
+// defaultIDevIdIakNvPolicyAttrs from "TPM 2.0 Keys for Device Identity and Attestation"
+// Section 7.3.5.1 (Table 9)
+func defaultIDevIdIakNvPolicyAttrs() tpm2.NVAttr {
+	return tpm2.AttrNoDA |
+		tpm2.AttrPolicyWrite | tpm2.AttrWriteAll | tpm2.AttrWritten |
+		tpm2.AttrPPRead | tpm2.AttrOwnerRead | tpm2.AttrAuthRead | tpm2.AttrPolicyRead
+}
+
+// devIdNvHandle defined by "TPM 2.0 Keys for Device Identity and Attestation" Section 7.3.2 IDevID/IAK Policy NV Indices for Recoverable Keys
+type devidNvHandle = tpmutil.Handle
+
+const (
+	Sha256SigningKey devidNvHandle = 0x01C90010
+	Sha256Ak         devidNvHandle = 0x01C90018
+	SHA384SigningKey devidNvHandle = 0x01C90011
+	SHA384Ak         devidNvHandle = 0x01C90019
+	Sha512SigningKey devidNvHandle = 0x01C90012
+	Sha512Ak         devidNvHandle = 0x01C9001A
+	Sm3256SigningKey devidNvHandle = 0x01C90013
+	Sm3256Ak         devidNvHandle = 0x01C9001B
+)
+
+func IDevIdIakNvPolicy(algorithm tpm2.Algorithm, nvHandle devidNvHandle) tpm2.NVPublic {
+	var dataSize uint16 = 0
+	switch algorithm {
+	case tpm2.AlgSHA256:
+		dataSize = 32
+	case tpm2.AlgSHA384:
+		dataSize = 50
+	case tpm2.AlgSHA512:
+		dataSize = 66
+	default:
+		return tpm2.NVPublic{}
+	}
+	return tpm2.NVPublic{
+		NVIndex:    nvHandle,
+		NameAlg:    algorithm,
+		Attributes: defaultIDevIdIakNvPolicyAttrs(),
+		DataSize:   dataSize,
 	}
 }

@@ -200,6 +200,7 @@ func NewKey(rw io.ReadWriter, parent tpmutil.Handle, template tpm2.Public, optCh
 		if err != nil {
 			return nil, err
 		}
+
 		fmt.Printf("creation data: %v\ncreation hash: %x\ncreation ticket:%v\n", cData, cHash, cTkt)
 		// h - handle of object
 		// name - name of object

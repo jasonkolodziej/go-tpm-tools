@@ -10,11 +10,14 @@ import (
 )
 
 // Reserved Handles from "TCG TPM v2.0 Provisioning Guidance" - v1r1 - Table 2
+// https://trustedcomputinggroup.org/wp-content/uploads/TCG-TPM-v2.0-Provisioning-Guidance-Published-v1r1.pdf
 const (
-	EKReservedHandle     = tpmutil.Handle(0x81010001)
-	EKECCReservedHandle  = tpmutil.Handle(0x81010002)
-	SRKReservedHandle    = tpmutil.Handle(0x81000001)
-	SRKECCReservedHandle = tpmutil.Handle(0x81000002)
+	EKReservedHandle         = tpmutil.Handle(0x81010001)
+	EKECCReservedHandle      = tpmutil.Handle(0x81010002)
+	SRKReservedHandle        = tpmutil.Handle(0x81000001)
+	SRKECCReservedHandle     = tpmutil.Handle(0x81000002)
+	IDevIdReservedHandle     = tpmutil.Handle(0x81020000)
+	IDevIdCertReservedHandle = tpmutil.Handle(0x01c90000)
 )
 
 // From "TCG EK Credential Profile", v2.3r2 Section 2.2.1.4

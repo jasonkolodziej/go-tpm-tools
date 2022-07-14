@@ -188,10 +188,13 @@ func BenchmarkKeyCreation(b *testing.B) {
 func TestChildKeyCreation(t *testing.T) {
 	rwc := test.GetTPM(t)
 	defer client.CheckedClose(t, rwc)
-	x := func(rw io.ReadWriter) (*client.Key, error) {
-		return client.NewKey(rw, tpm2.HandleOwner, client.SRKTemplateRSA(), nil)
-	}
-	if parentKey, err := x(rwc); err != nil {
+	//x := func(rw io.ReadWriter) (*client.Key, error) {
+	//	return client.NewKey(rw, tpm2.HandleOwner, client.SRKTemplateRSA(), nil)
+	//}
+	//if parentKey, err := x(rwc); err != nil {
+	//	t.Fatal(err)
+	//} else {
+	if parentKey, err := client.StorageRootKeyRSA(rwc); err != nil {
 		t.Fatal(err)
 	} else {
 		template := tpm2.Public{

@@ -17,11 +17,9 @@ package internal
 // // Windows has linking errors when using stack protectors
 // #cgo !windows CFLAGS: -fstack-protector-all
 // // Silence known warnings from the reference code and CGO code.
-// #cgo CFLAGS: -Wno-missing-braces -Wno-empty-body -Wno-unused-variable
-// // -- Jason's contribution
-// #cgo CFLAGS: -Wno-missing-braces -Wno-empty-body -Wno-unused-variable
-// #cgo darwin CFLAGS: -Wno-uninitialized -fno-common -Wdeprecated-declarations
-// #cgo !darwin CFLAGS: -Wno-maybe-uninitialized
+// #cgo CFLAGS: -Wno-missing-braces -Wno-empty-body -Wno-unused-variable -Wno-uninitialized
+// // Silence openssl deprecation warnings for ms-tpm-20-ref
+// #cgo CFLAGS: -Wno-deprecated-declarations
 // // Link against the system OpenSSL
 // #cgo CFLAGS: -DDEBUG=YES
 // #cgo CFLAGS: -DSIMULATION=NO
